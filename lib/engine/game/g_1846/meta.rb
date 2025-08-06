@@ -23,6 +23,12 @@ module Engine
             title: '1846 2p Variant',
             desc: 'unofficial rules for two players',
           },
+          {
+            sym: :barons_of_the_backwaters,
+            name: 'Barons of the Backwaters',
+            title: '1846 Barons of the Backwaters',
+            desc: 'TEST fan expansion by KingZombieGames',
+          },
         ].freeze
 
         PLAYER_RANGE = [3, 5].freeze
@@ -32,6 +38,7 @@ module Engine
             short_name: '1st Edition Private Companies',
             desc: 'Exclude the 2nd Edition companies Boomtown and Little Miami',
             players: [2, 3, 4, 5],
+            
           },
           {
             sym: :second_ed_co,
