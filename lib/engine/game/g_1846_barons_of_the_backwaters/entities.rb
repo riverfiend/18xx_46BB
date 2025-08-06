@@ -4,7 +4,8 @@ module Engine
   module Game
     module G1846BaronsOfTheBackwaters
       module Entities
-        {
+        COMPANIES = [
+          {
             name: 'Southwestern Steamboat Company',
             value: 40,
             revenue: 10,
@@ -46,6 +47,12 @@ module Engine
             ],
             color: nil,
           },
+        ].freeze
+      end
+    end
+  end
+end
+
 =begin
         COMPANIES = [
           {
@@ -457,6 +464,3 @@ module Engine
 
       end
 =end
-    end
-  end
-end
