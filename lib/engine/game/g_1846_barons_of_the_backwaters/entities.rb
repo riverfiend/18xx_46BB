@@ -8,7 +8,7 @@ module Engine
             name: 'Southwestern Steamboat Company',
             value: 40,
             revenue: 10,
-            desc: 'TESTING a new private'
+            desc: 'TESTING a new private '\
                   'Add a bonus to the value of one port city, either a $40 bonus to Evansville (J6) '\
                   'or a $20 bonus to (I17) / (K3) / (L8) / St. Louis (I1). '\
                   'At the beginning of each OR, this company\'s owner may reassign this bonus '\
