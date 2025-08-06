@@ -20,7 +20,7 @@ module Engine
                           when: 'owning_corp_or_turn',
                           owner_type: 'corporation',
                           free: false,
-                          discount: 20
+                          discount: 20,
                           must_lay_together: false,
                           hexes: %w[I13 J14 K13],
                           tiles: %w[7 8 9],
@@ -316,11 +316,11 @@ module Engine
                   'TODO: BPR receives an additional $20 into its treasury at the start of OR1.2, and, if included '\
                   'in the game, an additional yellow 2T is added to the train roster. The purchasing company may '\
                   'choose to replace the BRP token with its own, even if they already have a token in the hex. If '\
-                  'this double-token ability is waived, the second space will remain open permanently.'
+                  'this double-token ability is waived, the second space will remain open permanently.',
             sym: 'BRP',
             color: nil,
           },
-                    {
+          {
             name: 'Cleveland, Columbus, and Cincinnati (Minor)',
             value: 40,
             discount: -20,
@@ -329,7 +329,7 @@ module Engine
                   'Always operates after the MS and before other corporations. '\
                   'TODO: Receives a green 2T at the beginning of OR2.1. '\
                   'Splits dividends equally with owner. Purchasing company receives its cash, train and token. '\
-                  'TODO: Cannot be purchased by a corporation until its debt has been paid to the bank.'
+                  'TODO: Cannot be purchased by a corporation until its debt has been paid to the bank.',
             sym: 'CC&C',
             color: nil,
           },
@@ -342,8 +342,7 @@ module Engine
                   'Reservation is removed once this company is purchased by a corporation or closed.'\
                   'Owning corporation may also lay one extra phase-appropriate yellow or green tile in one of '\
                   'D6, E7, or F8 during their normal tile laying step. The owning corporation must pay the '\
-                  'normal cost to lay this extra tile. Using this ability closes the private company.'
-                  ,
+                  'normal cost to lay this extra tile. Using this ability closes the private company.',
             sym: 'C&WI',
             abilities: [
               {
@@ -534,7 +533,7 @@ module Engine
               desc_detail: 'TODO: At the beginning of the L&N\'s first full stock round, its stock price '\
                            'moves two spaces to the right. The L&N receives half the new share price '\
                            '(rounded down), and one treasury share is placed into the market as compensation.'\
-                           'This forced sale may exceed the market share limit.'
+                           'This forced sale may exceed the market share limit.',
               hexes: ['E11'],
               price: 40,
               teleport_price: 60,

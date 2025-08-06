@@ -14,6 +14,7 @@ module Engine
         end
         def num_random_privates(players)
           2 + 2 * (players > 3) + 2 * (players > 4) + (players > 5)
+        end
         def num_pass_companies(players)
           players.size
         end
