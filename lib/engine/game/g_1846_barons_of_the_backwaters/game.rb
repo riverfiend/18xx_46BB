@@ -46,6 +46,14 @@ module Engine
           'Cleveland, Columbus, and Cincinnati',
         ].freeze
 
+        MINOR_PRIVATES_GROUP = [
+          'Big 4 (Minor)',
+          'Nashville and Northwestern (Minor)',
+          'Virginia Coal Company (Minor)',
+          'Buffalo, Rochester, and Pittsburgh (Minor)',
+          'Cleveland, Columbus, and Cincinnati (Minor)',
+        ]
+
         REMOVABLE_PRIVATES_GROUP = [
           'Louisville, Cincinnati, and Lexington Railroad',
           'Bridging Company',
@@ -54,8 +62,6 @@ module Engine
           'Oil and Gas Company',
           'Steamboat Company',
           'Boomtown',
-          'Chicago and Western Indiana',
-          'Mail Contract',
           'Tunnel Blasting Company',
           'Meat Packing Company',
           'Lake Shore Line',
@@ -110,12 +116,19 @@ module Engine
         def num_removals(group)
           case group
           when REMOVABLE_MAJORS_GROUP
-            num_excluded_majors(players)
+            num_to_remove = num_excluded_majors(players)
+            puts "removing #{num_to_remove} majors"
+            num_to_remove
           when REMOVABLE_MINORS_GROUP
-            num_excluded_minors(players)
+            num_to_remove = num_excluded_minors(players)
+            puts "removing #{num_to_remove} minors"
+            num_to_remove
           when REMOVABLE_PRIVATES_GROUP
-            group.size - num_random_privates(players)
+            num_to_remove = group.size - num_random_privates(players)
+            puts "removing #{num_to_remove} privates"
+            num_to_remove
           else
+            puts "buggy removal"
             0
           end
         end
@@ -123,14 +136,16 @@ module Engine
         def remove_from_group!(group, entities)
           removals_group = group.dup
           removals = removals_group.sort_by { rand }.take(num_removals(group))
-
-          # This looks verbose, but it works around the fact that we can't
-          # modify code which includes rand() w/o breaking existing games
-          return if removals.empty?
+          if removals.empty?
+            puts "removals empty"
+            return
+          end
 
           @log << "Removing #{removals.join(', ')}"
+          puts "removing #{removals.join('; ')}"
           entities.reject! do |entity|
             if removals.include?(entity.name)
+              puts "entity #{entity.name}"
               yield entity if block_given?
               @removals << entity
               true
@@ -149,7 +164,9 @@ module Engine
             raise GameError, "#{self.class::GAME_TITLE} does not support #{player_count} players"
           end
           # First, prep the majors:
+          puts "removing majors..."
           remove_from_group!(REMOVABLE_MAJORS_GROUP, @corporations) do |corporation|
+            puts "removing major #{corporation.name}"
             place_home_token(corporation)
             ability_with_icons = corporation.abilities.find { |ability| ability.type == 'tile_lay' }
             remove_icons(ability_with_icons.hexes, self.class::ABILITY_ICONS[corporation.id]) if ability_with_icons
@@ -158,20 +175,33 @@ module Engine
             end
             place_second_token(corporation, **place_second_token_kwargs(corporation))
           end
+          @corporations.each {|corporation| puts "corporation #{corporation.name} remains"}
+          
           # Then, select the minors:
+          puts "removing minors..."
           remove_from_group!(REMOVABLE_MINORS_GROUP, @companies) do |company|
-            #ability_with_icons = company.abilities.find { |ability| ability.type == 'tile_lay' }
-            #remove_icons(ability_with_icons.hexes, self.class::ABILITY_ICONS[company.id]) if ability_with_icons
-            puts "attempting a company removal for #{company.name}"
+            puts "removing minor #{company.name}"
+            ability_with_icons = company.abilities.find { |ability| ability.type == 'tile_lay' }
+            remove_icons(ability_with_icons.hexes, self.class::ABILITY_ICONS[company.id]) if ability_with_icons
+            ability_with_icons = company.abilities.find { |ability| ability.type == 'assign_hexes' }
+            remove_icons(ability_with_icons.hexes, self.class::ABILITY_ICONS[company.id]) if ability_with_icons
+            matching_private_name = company.name << " (minor)"
+            if MINOR_PRIVATES_GROUP.include?(matching_private_name)
+              puts "matching minor found #{matching_private_name}"
+            end
             company.close! #this closes the private, but not the minor with the same name.
             @round.active_step.companies.delete(company)
           end
           # TODO: Manage the minor -> excluded private map
           # TODO: Add the CCC's extra private
           # Finally, select the privates
+          puts "removing privates..."
           remove_from_group!(REMOVABLE_PRIVATES_GROUP, @companies) do |company|
-            #ability_with_icons = company.abilities.find { |ability| ability.type == 'assign_hexes' }
-            #remove_icons(ability_with_icons.hexes, self.class::ABILITY_ICONS[company.id]) if ability_with_icons
+            puts "removing private #{company.name}"
+            ability_with_icons = company.abilities.find { |ability| ability.type == 'tile_lay' }
+            remove_icons(ability_with_icons.hexes, self.class::ABILITY_ICONS[company.id]) if ability_with_icons
+            ability_with_icons = company.abilities.find { |ability| ability.type == 'assign_hexes' }
+            remove_icons(ability_with_icons.hexes, self.class::ABILITY_ICONS[company.id]) if ability_with_icons
             company.close!
             @round.active_step.companies.delete(company)
           end
@@ -190,7 +220,6 @@ module Engine
             train.buyable = false
             buy_train(minor, train, :free)
             hex = hex_by_id(minor.coordinates)
-            puts minor.name
             hex.tile.cities[0].place_token(minor, minor.next_token, free: true)
           end
 
