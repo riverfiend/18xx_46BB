@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require_relative 'meta'
+require_relative 'entities'
 require_relative '../g_1846/game'
 
 module Engine
@@ -9,18 +10,40 @@ module Engine
       class Game < G1846::Game
         include Entities
         include_meta(G1846BaronsOfTheBackwaters::Meta)
+
+        CURRENCY_FORMAT_STR = '$%s'
+
+        BANK_CASH = { 3 => 8000, 4 => 9500, 5 => 11000, 6 => 13000 }.freeze
+
+        CERT_LIMIT = {
+          3 => { 5 => 14, 4 => 11 },
+          4 => { 7 => 14, 6 => 12, 5 => 10, 4 => 8 },
+          5 => { 8 => 13, 7 => 12, 6 => 10, 5 => 8, 4 => 6 },
+          6 => { 8 => 12, 7 => 10, 6 => 8, 5 => 7, 4 => 6 },
+        }.freeze
+
+        STARTING_CASH = { 3 => 400, 4 => 400, 5 => 400, 6 => 400 }.freeze
+
+        MARKET = [
+          %w[0c 10 20 30
+             40p 50p 60p 70p 80p 90p 100p 112p 124p 137p 150p
+             165 180 195 212 230 250 270 295 320 345 375 405 440 475 510 550],
+           ].freeze
+
         def num_extra_minors(players)
           players.size > 5 ? 2 : 1
         end
+
         def num_random_privates(players)
-          2 + 2 * (players > 3) + 2 * (players > 4) + (players > 5)
+          2 + (2 * (players > 3)) + (2 * (players > 4)) + (players > 5)
         end
+
         def num_pass_companies(players)
           players.size
         end
+
         def create_passes(players)
-          companies = super
-          passes = Array.new(num_pass_companies(players)) do |i|
+          Array.new(num_pass_companies(players)) do |i|
             name = "Pass (#{i + 1})"
             Company.new(
               sym: name,
@@ -29,8 +52,8 @@ module Engine
               desc: "Choose this card if you don't want to purchase any of the offered companies this turn.",
             )
           end
-          passes
         end
+
         def setup
           @turn = setup_turn
           @second_tokens_in_green = {}

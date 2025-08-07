@@ -1,4 +1,5 @@
 # frozen_string_literal: true
+
 require_relative '../g_1846/entities'
 
 module Engine
@@ -237,7 +238,7 @@ module Engine
                   'but cannot run this 2 train in the same OR in which the MS operated. ',
             sym: 'MS',
             color: nil,
-          },          
+          },
           {
             name: 'Big 4 (Minor)',
             value: 40,
@@ -258,7 +259,7 @@ module Engine
             value: 40,
             discount: -60,
             revenue: 0,
-            desc: 'Starts with $40, a 2 train, and a token in Nashville (L10). '\
+            desc: 'Starts with $40, a 2 train, and a token in Nashville (L8). '\
                   'Always operates after the MS and before other corporations. '\
                   'Its train may run in OR1. '\
                   'Splits dividends equally with owner. Purchasing company receives its cash, train and token '\
@@ -286,7 +287,7 @@ module Engine
                   'Its train may run in OR1. '\
                   'Splits dividends equally with owner. Purchasing company receives its cash, train and token '\
                   'but cannot run this 2 train in the same OR in which the BIG4 operated. '\
-                  'The NNI or the owning corporation also receives a $20 discount on the cost of all mountain tiles '\
+                  'The VCC or the owning corporation also receives a $20 discount on the cost of all mountain tiles '\
                   'and tunnel/pass hexsides. The owning corporation loses this ability when this company closes. '\
                   'The CM tile may be upgraded during any corporation\'s normal track laying step '\
                   'after the first gray train is purchased. The upgrading corporation must be able to '\
@@ -693,16 +694,16 @@ module Engine
 
               {
                 type: 'token',
-                description: 'Reserved $60 Nashville (L10) token',
-                desc_detail: 'May place $60 token in Nashville (L10) regardless of connectivity. This token slot is '\
-                'reserved until Phase IV.',
-                hexes: ['L10'],
+                description: 'Reserved $60 Nashville (L8) token',
+                desc_detail: 'May place $60 token in Nashville (L8) regardless of connectivity. This token slot is '\
+                             'reserved until Phase IV.',
+                hexes: ['L8'],
                 count: 1,
                 price: 60,
               },
               {
                 type: 'reservation',
-                hex: 'L10',
+                hex: 'L8',
                 remove: 'IV',
               },
 
@@ -712,11 +713,6 @@ module Engine
             always_market_price: true,
           },
         ].freeze
-      end
-    end
-  end
-end
-=begin
         MINORS = [
           {
             sym: 'MS',
@@ -738,7 +734,48 @@ end
             color: :cyan,
             text_color: 'black',
           },
+          {
+            sym: 'NNI',
+            name: 'Nashville and Northwestern',
+            logo: '1846/NNI',
+            simple_logo: '1846/NNI.alt',
+            tokens: [0],
+            coordinates: 'L8',
+            color: :pink,
+            text_color: 'black',
+          },
+          {
+            sym: 'VCC',
+            name: 'Virginia Coal Company',
+            logo: '1846/VCC',
+            simple_logo: '1846/VCC.alt',
+            tokens: [0],
+            coordinates: 'H18',
+            color: :pink,
+            text_color: 'black',
+          },
+          {
+            sym: 'BRP',
+            name: 'Buffalo, Rochester, and Pittsburgh',
+            logo: '1846/BRP',
+            simple_logo: '1846/BRP.alt',
+            tokens: [0],
+            coordinates: 'C21',
+            color: :pink,
+            text_color: 'black',
+          },
+          {
+            sym: 'CCC',
+            name: 'Cleveland, Columbus, and Cincinnati',
+            logo: '1846/CCC',
+            simple_logo: '1846/CCC.alt',
+            tokens: [0],
+            coordinates: 'C15',
+            color: :pink,
+            text_color: 'black',
+          },
         ].freeze
-
       end
-=end
+    end
+  end
+end
