@@ -38,7 +38,7 @@ module Engine
             short_name: '1st Edition Private Companies',
             desc: 'Exclude the 2nd Edition companies Boomtown and Little Miami',
             players: [2, 3, 4, 5],
-            
+
           },
           {
             sym: :second_ed_co,
