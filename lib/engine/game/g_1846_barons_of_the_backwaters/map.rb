@@ -146,6 +146,7 @@ module Engine
           'J10' => 'Louisville',
           'J12' => 'Lexington',
           'K3' => 'Cairo',
+          'K9' => 'Bowling Green',
           'L8' => 'Nashville'
         }.freeze
 
@@ -184,7 +185,7 @@ module Engine
             ['I5'] => 'city=revenue:yellow_10|green_20,slots:2;path=a:1,b:_0;path=a:3,b:_0;path=a:4,b:_0;path=a:0,b:_0',
             ['I15'] => 'city=revenue:20;path=a:2,b:_0;path=a:3,b:_0;path=a:4,b:_0',
             ['E21'] => 'city=revenue:yellow_10|green_20;path=a:1,b:_0;path=a:2,b:_0;path=a:4,b:_0',
-            ['K3'] => 'city=revenue:20,slots:2;path=a:3,b:_0;path=a:1,b:_0;path=a:4,b:_0;path=a:2,b:_0',
+            ['K3'] => 'city=revenue:20,slots:2;path=a:3,b:_0;path=a:4,b:_0;path=a:2,b:_0;icon=image:port',
           },
           red: {
             ['B8'] => 'offboard=revenue:yellow_40|brown_10;path=a:4,b:_0;icon=image:port;icon=image:port',
