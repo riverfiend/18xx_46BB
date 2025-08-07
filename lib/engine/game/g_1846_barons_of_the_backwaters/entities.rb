@@ -14,7 +14,7 @@ module Engine
             desc: 'Owning corporation may lay up to two extra yellow tiles '\
                   'in reserved hexes I3, J14, and K13, receiving a discount of $20 for each tile laid. '\
                   'Owning corporation does not need to be connected to either hex to use this ability.',
-            sym: 'MC',
+            sym: 'LC&LR',
             abilities: [{ type: 'blocks_hexes', owner_type: 'player', hexes: %w[I13 J14 K13] },
                         {
                           type: 'tile_lay',
@@ -744,6 +744,14 @@ module Engine
             coordinates: 'L8',
             color: :pink,
             text_color: 'black',
+            abilities: [
+              {
+                type: 'tile_discount',
+                discount: 20,
+                terrain: 'water',
+                owner_type: 'corporation',
+              },
+            ],
           },
           {
             sym: 'VCC',
@@ -754,6 +762,14 @@ module Engine
             coordinates: 'G3',
             color: :pink,
             text_color: 'black',
+            abilities: [
+              {
+                type: 'tile_discount',
+                discount: 20,
+                terrain: 'mountain',
+                owner_type: 'corporation',
+              },
+            ],
           },
           {
             sym: 'BRP',
