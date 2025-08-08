@@ -31,11 +31,11 @@ module Engine
            ].freeze
 
         REMOVABLE_MAJORS_GROUP = [
-          'Pennsylvania Railroad',
-          'Erie Railroad',
-          'Chesapeake & Ohio Railroad',
-          'Baltimore & Ohio Railroad',
-          'Illinois Central Railroad',
+          'PRR',
+          'ERIE',
+          'C&O',
+          'B&O',
+          'IC',
         ].freeze
 
         REMOVABLE_MINORS_GROUP = [
@@ -115,10 +115,7 @@ module Engine
 
         def num_removals(group)
           case group
-          when REMOVABLE_MAJORS_GROUP
-            num_to_remove = num_excluded_majors(players)
-            puts "removing #{num_to_remove} majors"
-            num_to_remove
+          when REMOVABLE_MAJORS_GROUP then num_excluded_majors(players)
           when REMOVABLE_MINORS_GROUP
             num_to_remove = num_excluded_minors(players)
             puts "removing #{num_to_remove} minors"
@@ -136,16 +133,13 @@ module Engine
         def remove_from_group!(group, entities)
           removals_group = group.dup
           removals = removals_group.sort_by { rand }.take(num_removals(group))
-          if removals.empty?
-            puts "removals empty"
-            return
-          end
+          return if removals.empty?
 
           @log << "Removing #{removals.join(', ')}"
-          puts "removing #{removals.join('; ')}"
+          puts "Removing #{removals.join('; ')}"
           entities.reject! do |entity|
-            if removals.include?(entity.name)
-              puts "entity #{entity.name}"
+            if removals.include?(entity.name) || removals.include?(entity.name[0..-8])
+              puts "attempting to remove #{entity.name}"
               yield entity if block_given?
               @removals << entity
               true
@@ -157,7 +151,6 @@ module Engine
 
         def setup
           @turn = setup_turn
-          @second_tokens_in_green = {}
 
           # When creating a game the game will not have enough to start
           unless (player_count = @players.size).between?(*self.class::PLAYER_RANGE)
@@ -166,17 +159,13 @@ module Engine
           # First, prep the majors:
           puts "removing majors..."
           remove_from_group!(REMOVABLE_MAJORS_GROUP, @corporations) do |corporation|
-            puts "removing major #{corporation.name}"
             place_home_token(corporation)
             ability_with_icons = corporation.abilities.find { |ability| ability.type == 'tile_lay' }
             remove_icons(ability_with_icons.hexes, self.class::ABILITY_ICONS[corporation.id]) if ability_with_icons
             abilities(corporation, :reservation) do |ability|
               corporation.remove_ability(ability)
             end
-            place_second_token(corporation, **place_second_token_kwargs(corporation))
           end
-          @corporations.each {|corporation| puts "corporation #{corporation.name} remains"}
-          
           # Then, select the minors:
           puts "removing minors..."
           remove_from_group!(REMOVABLE_MINORS_GROUP, @companies) do |company|
@@ -192,6 +181,7 @@ module Engine
             company.close! #this closes the private, but not the minor with the same name.
             @round.active_step.companies.delete(company)
           end
+=begin
           # TODO: Manage the minor -> excluded private map
           # TODO: Add the CCC's extra private
           # Finally, select the privates
@@ -207,6 +197,7 @@ module Engine
           end
 
           @log << "Privates in the game: #{@companies.reject { |c| c.name.include?('Pass') }.map(&:name).sort.join(', ')}"
+=end
           @log << "Corporations in the game: #{@corporations.map(&:name).sort.join(', ')}"
 
           @cert_limit = init_cert_limit
