@@ -124,6 +124,11 @@ module Engine
 
         def remove_from_group!(group, entities)
           removals_group = group.dup
+          if @force_exclude_companies
+            @force_exclude_companies.each do |excluded_private|
+              removals_group.delete(excluded_private)
+            end
+          end
           removals = removals_group.sort_by { rand }.take(num_removals(group))
           return if removals.empty?
 
@@ -132,7 +137,7 @@ module Engine
           entities.reject! do |entity|
             if removals.include?(entity.name) || removals.include?(entity.name[0..-8])
               yield entity if block_given?
-              @removals << entity
+              removals << entity
               true
             else
               false
@@ -142,10 +147,10 @@ module Engine
 
         def private_excluded(minor)
           case minor
-          when "BRP" then "LSL"
-          when "VCC" then "TBC"
-          when "NNI" then "BC"
-          when "CC&C" then "O&I"
+          when "BRP" then "Lake Shore Line"
+          when "VCC" then "Tunnel Blasting Company"
+          when "NNI" then "Bridging Company"
+          when "CC&C" then "Ohio & Indiana"
           when "BIG4", "MS" then "NOT_A_PRIVATE"
           end
         end
@@ -178,23 +183,21 @@ module Engine
             @round.active_step.companies.delete(minor)
           end
           @minor_effects = 0
-          force_exclude_companies = []
+          @force_exclude_companies = []
           @companies.each do |company|
             if company.name.include? "Minor"
-              force_exclude_companies.push(private_excluded(company.id))
-              puts "#{company.name} forces out #{private_excluded(company.id)}"
+              @force_exclude_companies.push(private_excluded(company.id))
               if company.id == "CC&C"
                 puts "un-removing a private..."
                 @minor_effects -= 1
               end
             end
           end
-          force_exclude_companies.each do |excluded_private|
+          @force_exclude_companies.each do |excluded_private|
             @companies.each do |company|
-              if company.id.include? excluded_private
-                puts "striking an extra private"
+              if company.name.include? excluded_private
                 @minor_effects += 1
-                puts "closing #{excluded_private}"
+                @log <<  "Removing #{company.name}"
                 ability_with_icons = company.abilities.find { |ability| ability.type == 'tile_lay' }
                 remove_icons(ability_with_icons.hexes, self.class::ABILITY_ICONS[company.id]) if ability_with_icons
                 ability_with_icons = company.abilities.find { |ability| ability.type == 'assign_hexes' }
@@ -203,9 +206,6 @@ module Engine
               end
             end
           end
-
-          # TODO: Manage the minor -> excluded private map
-          # TODO: Add the CCC's extra private
           # Finally, select the privates
           puts "removing privates..."
           remove_from_group!(REMOVABLE_PRIVATES_GROUP, @companies) do |company|
