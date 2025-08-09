@@ -116,16 +116,14 @@ module Engine
         def num_removals(group)
           case group
           when REMOVABLE_MAJORS_GROUP then num_excluded_majors(players)
-          when REMOVABLE_MINORS_GROUP
-            num_to_remove = num_excluded_minors(players)
-            puts "removing #{num_to_remove} minors"
-            num_to_remove
+          when REMOVABLE_MINORS_GROUP, MINOR_PRIVATES_GROUP then num_excluded_minors(players)
           when REMOVABLE_PRIVATES_GROUP
             num_to_remove = group.size - num_random_privates(players)
             puts "removing #{num_to_remove} privates"
             num_to_remove
           else
             puts "buggy removal"
+            raise GameError, "Something has Gone Wrong -- Buggy removal"
             0
           end
         end
@@ -168,20 +166,15 @@ module Engine
           end
           # Then, select the minors:
           puts "removing minors..."
-          remove_from_group!(REMOVABLE_MINORS_GROUP, @companies) do |company|
+          remove_from_group!(MINOR_PRIVATES_GROUP, @companies) do |company|
             puts "removing minor #{company.name}"
             ability_with_icons = company.abilities.find { |ability| ability.type == 'tile_lay' }
             remove_icons(ability_with_icons.hexes, self.class::ABILITY_ICONS[company.id]) if ability_with_icons
             ability_with_icons = company.abilities.find { |ability| ability.type == 'assign_hexes' }
             remove_icons(ability_with_icons.hexes, self.class::ABILITY_ICONS[company.id]) if ability_with_icons
-            matching_private_name = company.name << " (minor)"
-            if MINOR_PRIVATES_GROUP.include?(matching_private_name)
-              puts "matching minor found #{matching_private_name}"
-            end
-            company.close! #this closes the private, but not the minor with the same name.
+            company.close!
             @round.active_step.companies.delete(company)
           end
-=begin
           # TODO: Manage the minor -> excluded private map
           # TODO: Add the CCC's extra private
           # Finally, select the privates
@@ -197,7 +190,6 @@ module Engine
           end
 
           @log << "Privates in the game: #{@companies.reject { |c| c.name.include?('Pass') }.map(&:name).sort.join(', ')}"
-=end
           @log << "Corporations in the game: #{@corporations.map(&:name).sort.join(', ')}"
 
           @cert_limit = init_cert_limit
