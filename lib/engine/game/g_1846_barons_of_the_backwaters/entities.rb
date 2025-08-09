@@ -782,10 +782,10 @@ module Engine
             text_color: 'black',
           },
           {
-            sym: 'CCC',
+            sym: 'CC&C',
             name: 'Cleveland, Columbus, and Cincinnati',
-            logo: '1846/CCC',
-            simple_logo: '1846/CCC.alt',
+            logo: '1846/CC&C',
+            simple_logo: '1846/CC&C.alt',
             tokens: [0],
             coordinates: 'G15',
             color: :pink,
