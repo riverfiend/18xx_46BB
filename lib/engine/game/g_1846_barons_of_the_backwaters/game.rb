@@ -90,7 +90,7 @@ module Engine
         end
 
         def num_excluded_minors(players)
-          4 + (players.size < 6 ? 1 : 0)
+          3 + (players.size < 6 ? 1 : 0)
         end
 
         def num_random_privates(players) #
