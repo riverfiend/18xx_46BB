@@ -117,10 +117,7 @@ module Engine
           case group
           when REMOVABLE_MAJORS_GROUP then num_excluded_majors(players)
           when REMOVABLE_MINORS_GROUP, MINOR_PRIVATES_GROUP then num_excluded_minors(players)
-          when REMOVABLE_PRIVATES_GROUP
-            num_to_remove = group.size - num_random_privates(players)
-            puts "removing #{num_to_remove} privates"
-            num_to_remove
+          when REMOVABLE_PRIVATES_GROUP then group.size - num_random_privates(players)
           else
             puts "buggy removal"
             raise GameError, "Something has Gone Wrong -- Buggy removal"
@@ -137,7 +134,6 @@ module Engine
           puts "Removing #{removals.join('; ')}"
           entities.reject! do |entity|
             if removals.include?(entity.name) || removals.include?(entity.name[0..-8])
-              puts "attempting to remove #{entity.name}"
               yield entity if block_given?
               @removals << entity
               true
@@ -166,8 +162,9 @@ module Engine
           end
           # Then, select the minors:
           puts "removing minors..."
+          @removed_minors = {}
           remove_from_group!(MINOR_PRIVATES_GROUP, @companies) do |company|
-            puts "removing minor #{company.name}"
+            @removed_minors << company
             ability_with_icons = company.abilities.find { |ability| ability.type == 'tile_lay' }
             remove_icons(ability_with_icons.hexes, self.class::ABILITY_ICONS[company.id]) if ability_with_icons
             ability_with_icons = company.abilities.find { |ability| ability.type == 'assign_hexes' }
@@ -180,7 +177,6 @@ module Engine
           # Finally, select the privates
           puts "removing privates..."
           remove_from_group!(REMOVABLE_PRIVATES_GROUP, @companies) do |company|
-            puts "removing private #{company.name}"
             ability_with_icons = company.abilities.find { |ability| ability.type == 'tile_lay' }
             remove_icons(ability_with_icons.hexes, self.class::ABILITY_ICONS[company.id]) if ability_with_icons
             ability_with_icons = company.abilities.find { |ability| ability.type == 'assign_hexes' }
@@ -198,12 +194,22 @@ module Engine
 
           @draft_finished = false
 
+          @minors_removed.each do |minor|
+            puts "#{minor.name} was removed"
+          end
+
           @minors.each do |minor|
-            train = @depot.upcoming[0]
-            train.buyable = false
-            buy_train(minor, train, :free)
-            hex = hex_by_id(minor.coordinates)
-            hex.tile.cities[0].place_token(minor, minor.next_token, free: true)
+            puts "considering minor #{minor.name}..."
+            if @minors_removed.include?(minor)
+              puts "#{minor} removed, not initializing it"
+              @log << "#{minor} removed, not initializing it"
+            else
+              train = @depot.upcoming[0]
+              train.buyable = false
+              buy_train(minor, train, :free)
+              hex = hex_by_id(minor.coordinates)
+              hex.tile.cities[0].place_token(minor, minor.next_token, free: true)
+            end
           end
 
           @last_action = nil
