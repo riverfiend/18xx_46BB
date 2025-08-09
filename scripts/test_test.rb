@@ -15,11 +15,11 @@ def test_exec(game_title, player_count)
   game_class = Engine.game_by_title(game_title)
   players = Array.new(player_count) { |n| "Player #{n + 1}" }
   game = game_class.new(players)
-  
-  #corporations = game.send(:init_corporations, game.stock_market)
-  #corporations.concat(game.send(:init_minors)) if minors
-#
- # corporations.each do |corp|
+
+  # corporations = game.send(:init_corporations, game.stock_market)
+  # corporations.concat(game.send(:init_minors)) if minors
+  #
+  # corporations.each do |corp|
   #  next if simple && corp.logo == corp.simple_logo
-  #end
+  # end
 end

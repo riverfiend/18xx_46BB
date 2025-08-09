@@ -147,7 +147,7 @@ module Engine
           'J12' => 'Lexington',
           'K3' => 'Cairo',
           'K9' => 'Bowling Green',
-          'L8' => 'Nashville'
+          'L8' => 'Nashville',
         }.freeze
 
         HEXES = {
@@ -211,7 +211,7 @@ module Engine
                       'path=a:4,b:_0;path=a:5,b:_0;label=W;icon=image:port;icon=image:port;icon=image:1846/meat;'\
                       'icon=image:1846/20',
             ['L8'] => 'city=revenue:yellow_30|brown_60,slots:2,groups:Nashville;icon=image:1846/30;icon=image:port;'\
-                      'path=a:2,b:_0;path=a:3,b:_0;label=S/W'
+                      'path=a:2,b:_0;path=a:3,b:_0;label=S/W',
           },
           yellow: {
             ['C15'] => 'city=revenue:40,slots:2;path=a:1,b:_0;path=a:3,b:_0;label=Z;'\

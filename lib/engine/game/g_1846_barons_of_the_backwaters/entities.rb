@@ -542,7 +542,7 @@ module Engine
             {
               type: 'reservation',
               hex: 'J10',
-              city: 1
+              city: 1,
             },
           ],
             coordinates: 'J10',
