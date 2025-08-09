@@ -158,10 +158,11 @@ module Engine
             %w[E5 F6 G5 H6] => 'icon=image:1846/ic',
             ['J4'] => 'border=edge:4,type:water,cost:40;icon=image:1846/ic',
             ['J6'] => 'city=revenue:0;border=edge:1,type:water,cost:40;border=edge:5,type:water,cost:40'\
-                      'border=edge:0,type:water,cost:40;icon=image:port;icon=image:port;',
+                      'border=edge:0,type:water,cost:40;icon=image:swport;icon=image:swport;',
             ['J8'] => 'upgrade=cost:40,terrain:water',
             ['I11'] => 'border=edge:3,type:water,cost:40',
-            %w[C9 E11 G3 G7 G9 G15] => 'city=revenue:0',
+            %w[C9 E11 G3 G7] => 'city=revenue:0',
+            %w[G9 G15] => 'city=revenue:0;icon=image:1846/oil,sticky:1',
             %w[G13] => 'city=revenue:0;icon=image:1846/lm,sticky:1',
             ['B16'] => 'city=revenue:0;border=edge:4,type:mountain,cost:40',
             ['D14'] => 'city=revenue:0;icon=image:port,sticky:1;icon=image:1846/lsl,sticky:1',
@@ -173,7 +174,7 @@ module Engine
             ['G17'] => 'upgrade=cost:40,terrain:mountain;border=edge:4,type:water,cost:20',
             ['H14'] => 'upgrade=cost:60,terrain:mountain|water',
             ['I13'] => 'border=edge:2,type:water,cost:60',
-            ['J2'] => 'border=edge:2,type:water,cost:40',
+            ['J2'] => '',
             %w[J12 J14 K11 K13] => 'upgrade=cost:40,terrain:mountain',
             %w[K5 K7] => 'border=edge:2,type:water,cost:40;border=edge:3,type:water,cost:40',
             ['K9'] => 'city=revenue:zero;border=edge:2,type:water,cost:40',
@@ -184,8 +185,8 @@ module Engine
                        'border=edge:2,type:mountain,cost:40',
             ['I5'] => 'city=revenue:yellow_10|green_20,slots:2;path=a:1,b:_0;path=a:3,b:_0;path=a:4,b:_0;path=a:0,b:_0',
             ['I15'] => 'city=revenue:20;path=a:2,b:_0;path=a:3,b:_0;path=a:4,b:_0',
-            ['E21'] => 'city=revenue:yellow_10|green_20;path=a:1,b:_0;path=a:2,b:_0;path=a:4,b:_0',
-            ['K3'] => 'city=revenue:20,slots:2;path=a:3,b:_0;path=a:4,b:_0;path=a:2,b:_0;icon=image:port',
+            ['E21'] => 'city=revenue:yellow_10|green_20;path=a:1,b:_0;path=a:2,b:_0;path=a:4,b:_0;icon=image:1846/oil,sticky:1',
+            ['K3'] => 'city=revenue:20,slots:2;path=a:3,b:_0;path=a:4,b:_0;path=a:2,b:_0;icon=image:swport',
           },
           red: {
             ['B8'] => 'offboard=revenue:yellow_40|brown_10;path=a:4,b:_0;icon=image:port;icon=image:port',
@@ -200,7 +201,7 @@ module Engine
                        'path=a:1,b:_0;path=a:0,b:_0;label=E;border=edge:2',
             ['E23'] => 'offboard=revenue:yellow_20|brown_50,groups:E;icon=image:1846/30;path=a:1,b:_0;label=E',
             ['I17'] => 'offboard=revenue:yellow_20|brown_50,groups:E;icon=image:1846/20;path=a:1,b:_0;path=a:2,b:_0;'\
-                       'label=E;border=edge:2,type:water,cost:40',
+                       'label=E;border=edge:2,type:water,cost:40;icon=image:swport',
             ['F22'] => 'offboard=revenue:yellow_30|brown_70,hide:1,groups:E;icon=image:1846/20;'\
                        'path=a:1,b:_0;border=edge:0',
             ['G21'] => 'offboard=revenue:yellow_30|brown_70,groups:E;'\
@@ -208,10 +209,11 @@ module Engine
                        'path=a:2,b:_0;label=E;border=edge:3',
             ['H20'] => 'offboard=revenue:yellow_20|brown_40,groups:E;icon=image:1846/30;path=a:2,b:_0;label=E',
             ['I1'] => 'offboard=revenue:yellow_50|brown_70,groups:St. Louis;path=a:3,b:_0;'\
-                      'path=a:4,b:_0;path=a:5,b:_0;label=W;icon=image:port;icon=image:port;icon=image:1846/meat;'\
-                      'icon=image:1846/20',
-            ['L8'] => 'city=revenue:yellow_30|brown_60,slots:2,groups:Nashville;icon=image:1846/30;icon=image:port;'\
-                      'path=a:2,b:_0;path=a:3,b:_0;label=S/W',
+                      'path=a:4,b:_0;path=a:5,b:_0;label=W;icon=image:port;icon=image:swport;icon=image:1846/meat;'\
+                      'icon=image:1846/20;border=edge:5,type:water,cost:40',
+            ['L8'] => 'city=revenue:yellow_30|brown_60,slots:2,groups:Nashville;icon=image:1846/30,loc:3.5;'\
+                      'icon=image:swport,loc:0.5;'\
+                      'path=a:2,b:_0,terminal:1;path=a:3,b:_0,terminal:1;label=S/W',
           },
           yellow: {
             ['C15'] => 'city=revenue:40,slots:2;path=a:1,b:_0;path=a:3,b:_0;label=Z;'\
@@ -227,7 +229,7 @@ module Engine
                        'city=revenue:40;path=a:5,b:_1;path=a:0,b:_1;label=Z;'\
                        'upgrade=cost:40,terrain:water;icon=image:1846/boom',
           },
-          blue: { ['D16'] => '' },
+          blue: { ['D16'] => ''},
         }.freeze
       end
     end
