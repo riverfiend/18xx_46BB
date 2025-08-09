@@ -80,12 +80,9 @@ module Engine
 
         def num_excluded_majors(players)
           case players.size
-          when 3
-            3
-          when 4
-            1
-          else
-            0
+          when 3 then 3
+          when 4 then 1
+          else 0
           end
         end
 
@@ -93,8 +90,8 @@ module Engine
           3 + (players.size < 6 ? 1 : 0)
         end
 
-        def num_random_privates(players) #
-          2 + (2 * (players.size > 3 ? 1 : 0)) + (2 * (players.size > 4? 1 : 0)) + (players.size > 5 ? 1 : 0)
+        def num_random_privates(players, minor_effects = 0) #
+          2 + (2 * (players.size > 3 ? 1 : 0)) + (2 * (players.size > 4? 1 : 0)) + (players.size > 5 ? 1 : 0) - minor_effects
         end
 
         def num_pass_companies(players)
@@ -113,11 +110,11 @@ module Engine
           end
         end
 
-        def num_removals(group)
+        def num_removals(group, minor_effects = 0)
           case group
           when REMOVABLE_MAJORS_GROUP then num_excluded_majors(players)
           when REMOVABLE_MINORS_GROUP, MINOR_PRIVATES_GROUP then num_excluded_minors(players)
-          when REMOVABLE_PRIVATES_GROUP then group.size - num_random_privates(players)
+          when REMOVABLE_PRIVATES_GROUP then group.size - num_random_privates(players, minor_effects)
           else
             puts "buggy removal"
             raise GameError, "Something has Gone Wrong -- Buggy removal"
@@ -143,6 +140,16 @@ module Engine
           end
         end
 
+        def private_excluded(minor)
+          case minor
+          when "BRP" then "LSL"
+          when "VCC" then "TBC"
+          when "NNI" then "BC"
+          when "CC&C" then "O&I"
+          when "BIG4", "MS" then "NOT_A_PRIVATE"
+          end
+        end
+
         def setup
           @turn = setup_turn
 
@@ -151,7 +158,6 @@ module Engine
             raise GameError, "#{self.class::GAME_TITLE} does not support #{player_count} players"
           end
           # First, prep the majors:
-          puts "removing majors..."
           remove_from_group!(REMOVABLE_MAJORS_GROUP, @corporations) do |corporation|
             place_home_token(corporation)
             ability_with_icons = corporation.abilities.find { |ability| ability.type == 'tile_lay' }
@@ -161,17 +167,43 @@ module Engine
             end
           end
           # Then, select the minors:
-          puts "removing minors..."
-          @removed_minors = {}
-          remove_from_group!(MINOR_PRIVATES_GROUP, @companies) do |company|
-            @removed_minors << company
-            ability_with_icons = company.abilities.find { |ability| ability.type == 'tile_lay' }
-            remove_icons(ability_with_icons.hexes, self.class::ABILITY_ICONS[company.id]) if ability_with_icons
-            ability_with_icons = company.abilities.find { |ability| ability.type == 'assign_hexes' }
-            remove_icons(ability_with_icons.hexes, self.class::ABILITY_ICONS[company.id]) if ability_with_icons
-            company.close!
-            @round.active_step.companies.delete(company)
+          @removed_minors = []
+          remove_from_group!(MINOR_PRIVATES_GROUP, @companies) do |minor|
+            @removed_minors.push(minor.id)
+            ability_with_icons = minor.abilities.find { |ability| ability.type == 'tile_lay' }
+            remove_icons(ability_with_icons.hexes, self.class::ABILITY_ICONS[minor.id]) if ability_with_icons
+            ability_with_icons = minor.abilities.find { |ability| ability.type == 'assign_hexes' }
+            remove_icons(ability_with_icons.hexes, self.class::ABILITY_ICONS[minor.id]) if ability_with_icons
+            minor.close!
+            @round.active_step.companies.delete(minor)
           end
+          @minor_effects = 0
+          force_exclude_companies = []
+          @companies.each do |company|
+            if company.name.include? "Minor"
+              force_exclude_companies.push(private_excluded(company.id))
+              puts "#{company.name} forces out #{private_excluded(company.id)}"
+              if company.id == "CC&C"
+                puts "un-removing a private..."
+                @minor_effects -= 1
+              end
+            end
+          end
+          force_exclude_companies.each do |excluded_private|
+            @companies.each do |company|
+              if company.id.include? excluded_private
+                puts "striking an extra private"
+                @minor_effects += 1
+                puts "closing #{excluded_private}"
+                ability_with_icons = company.abilities.find { |ability| ability.type == 'tile_lay' }
+                remove_icons(ability_with_icons.hexes, self.class::ABILITY_ICONS[company.id]) if ability_with_icons
+                ability_with_icons = company.abilities.find { |ability| ability.type == 'assign_hexes' }
+                remove_icons(ability_with_icons.hexes, self.class::ABILITY_ICONS[company.id]) if ability_with_icons
+                company.close!
+              end
+            end
+          end
+
           # TODO: Manage the minor -> excluded private map
           # TODO: Add the CCC's extra private
           # Finally, select the privates
@@ -194,16 +226,8 @@ module Engine
 
           @draft_finished = false
 
-          @minors_removed.each do |minor|
-            puts "#{minor.name} was removed"
-          end
-
           @minors.each do |minor|
-            puts "considering minor #{minor.name}..."
-            if @minors_removed.include?(minor)
-              puts "#{minor} removed, not initializing it"
-              @log << "#{minor} removed, not initializing it"
-            else
+            if !@removed_minors.include?(minor.name)
               train = @depot.upcoming[0]
               train.buyable = false
               buy_train(minor, train, :free)
