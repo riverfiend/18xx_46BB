@@ -70,6 +70,38 @@ module Engine
           'Little Miami',
         ].freeze
 
+        ABILITY_ICONS = {
+          SC: 'port',
+          SWSC: 'swport',
+          MPC: 'meat',
+          GMC: 'grain',
+          LSL: 'lsl',
+          BT: 'boom',
+          OG: 'oil',
+          LM: 'lm',
+          IC: 'ic',
+        }.freeze
+
+        MEAT_HEXES = %w[D6 I1].freeze
+
+        GRAIN_HEXES = %w[D6 I1].freeze
+
+        STEAMBOAT_HEXES = %w[B8 C5 D14 I1 G19].freeze
+
+        SOUTHWEST_STEAMBOAT_HEXES = %w[B8 C5 D14 I1 G19].freeze
+
+        BOOMTOWN_HEXES = %w[H12 J10].freeze
+
+        OILGAS_HEXES = %w[H12 J10].freeze
+
+        ASSIGNMENT_TOKENS = {
+          'MPC' => '/icons/1846/mpc_token.svg',
+          'GMC' => '/icons/1846/gmc_token.svg',
+          'SC' => '/icons/1846/sc_token.svg',
+          'SWSC' => '/icons/1846/swsc_token.svg',
+          'BT' => '/icons/1846/bt_token.svg',
+          'OG' => '/icons/1846/og_token.svg',
+        }.freeze
         # def removable_majors_group
         #  @removable_majors_group ||= self.class::REMOVABLE_MAJORS_GROUP
         # end
@@ -235,6 +267,106 @@ module Engine
           end
 
           @last_action = nil
+        end
+
+        def revenue_for(route, stops)
+          revenue = super
+
+          [
+            [boomtown, 20],
+            [oilgas, 20],
+            [mill, 30],
+            [meat_packing, 30],
+            [steamboat, 20, 'port'],
+            [swsteamboat, 20, 'swport'],
+          ].each do |company, bonus_revenue, icon|
+            id = company&.id
+            if id && route.corporation.assigned?(id) && (assigned_stop = stops.find { |s| s.hex.assigned?(id) })
+              revenue += bonus_revenue * (icon ? assigned_stop.hex.tile.icons.count { |i| i.name == icon } : 1)
+            end
+          end
+
+          revenue += east_west_bonus(stops)[:revenue]
+
+          if route.train.owner.companies.include?(mail_contract)
+            longest = route.routes.max_by { |r| [r.visited_stops.size, r.train.id] }
+            revenue += route.visited_stops.size * 10 if route == longest
+          end
+
+          revenue
+        end
+
+        def east_west_bonus(stops)
+          bonus = { revenue: 0 }
+
+          east = stops.find { |stop| stop.groups.include?('E') }
+          west = stops.find { |stop| stop.tile.label&.to_s == 'W' }
+
+          if east && west
+            bonus[:revenue] += east.tile.icons.sum { |icon| icon.name.to_i }
+            bonus[:revenue] += west.tile.icons.sum { |icon| icon.name.to_i }
+            bonus[:description] = 'E/W'
+          end
+
+          bonus
+        end
+
+        def revenue_str(route)
+          stops = route.stops
+          stop_hexes = stops.map(&:hex)
+          str = route.hexes.map do |h|
+            stop_hexes.include?(h) ? h&.name : "(#{h&.name})"
+          end.join('-')
+
+          [
+            [boomtown, self.class::BOOMTOWN_REVENUE_DESC],
+            [meat_packing, self.class::MEAT_REVENUE_DESC],
+            [steamboat, 'Port'],
+          ].each do |company, desc|
+            id = company&.id
+            str += " + #{desc}" if id && route.corporation.assigned?(id) && stops.any? { |s| s.hex.assigned?(id) }
+          end
+
+          bonus = east_west_bonus(stops)[:description]
+          str += " + #{bonus}" if bonus
+
+          if route.train.owner.companies.include?(mail_contract)
+            longest = route.routes.max_by { |r| [r.visited_stops.size, r.train.id] }
+            str += ' + Mail Contract' if route == longest
+          end
+
+          str
+        end
+
+        def event_remove_bonuses!
+          removals = Hash.new { |h, k| h[k] = {} }
+
+          @corporations.each do |corp|
+            corp.assignments.dup.each do |company, _|
+              removals[company][:corporation] = corp.name
+              corp.remove_assignment!(company)
+            end
+          end
+
+          @hexes.each do |hex|
+            hex.assignments.dup.each do |company, _|
+              removals[company][:hex] = hex.name
+              hex.remove_assignment!(company)
+            end
+          end
+
+          remove_icons(self.class::BOOMTOWN_HEXES, self.class::ABILITY_ICONS['BT'])
+          remove_icons(self.class::OILGAS_HEXES, self.class::ABILITY_ICONS['OG'])
+          remove_icons(self.class::MEAT_HEXES, self.class::ABILITY_ICONS['MPC'])
+          remove_icons(self.class::GRAIN_HEXES, self.class::ABILITY_ICONS['GMC'])
+          remove_icons(self.class::STEAMBOAT_HEXES, self.class::ABILITY_ICONS['SC'])
+          remove_icons(self.class::SOUTHWEST_STEAMBOAT_HEXES, self.class::ABILITY_ICONS['SWSC'])
+
+          removals.each do |company, removal|
+            hex = removal[:hex]
+            corp = removal[:corporation]
+            @log << "-- Event: #{corp}'s #{company_by_id(company).name} bonus removed from #{hex} --"
+          end
         end
       end
     end
