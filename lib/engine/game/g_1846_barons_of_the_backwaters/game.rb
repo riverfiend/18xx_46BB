@@ -384,7 +384,7 @@ module Engine
             Engine::Step::DiscardTrain,
             G1846BaronsOfTheBackwaters::Step::SCAssign,
             G1846BaronsOfTheBackwaters::Step::SWSCAssign,
-            G1846BaronsOfTheBackwaters::Step::BuySellParShares,
+            G1846::Step::BuySellParShares,
             Engine::Step::HomeToken,
           ])
         end
