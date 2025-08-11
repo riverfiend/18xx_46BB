@@ -84,7 +84,7 @@ module Engine
 
         MEAT_HEXES = %w[D6 I1].freeze
 
-        GRAIN_HEXES = %w[D6 I1].freeze
+        GRAIN_HEXES = %w[G3 C9 J12].freeze
 
         STEAMBOAT_HEXES = %w[B8 C5 D14 I1 G19].freeze
 
@@ -92,7 +92,7 @@ module Engine
 
         BOOMTOWN_HEXES = %w[H12 J10].freeze
 
-        OILGAS_HEXES = %w[H12 J10].freeze
+        OILGAS_HEXES = %w[G19 G15 E21].freeze
 
         ASSIGNMENT_TOKENS = {
           'MPC' => '/icons/1846/mpc_token.svg',
@@ -257,7 +257,10 @@ module Engine
           @draft_finished = false
 
           @minors.each do |minor|
-            next if @removed_minors.include?(minor.name)
+            if @removed_minors.include?(minor.name)
+              minor.close!
+              next
+            end
 
             train = @depot.upcoming[0]
             train.buyable = false
@@ -271,13 +274,12 @@ module Engine
 
         def revenue_for(route, stops)
           revenue = super
+          # This should properly process the base-game privates
+          # and east-west bonuses
 
           [
-            [boomtown, 20],
             [oilgas, 20],
-            [mill, 30],
-            [meat_packing, 30],
-            [steamboat, 20, 'port'],
+            [grain_mill, 30],
             [swsteamboat, 20, 'swport'],
           ].each do |company, bonus_revenue, icon|
             id = company&.id
@@ -286,26 +288,21 @@ module Engine
             end
           end
 
-          revenue += east_west_bonus(stops)[:revenue]
-
-          if route.train.owner.companies.include?(mail_contract)
-            longest = route.routes.max_by { |r| [r.visited_stops.size, r.train.id] }
-            revenue += route.visited_stops.size * 10 if route == longest
-          end
+          revenue += north_south_bonus(stops)[:revenue]
 
           revenue
         end
 
-        def east_west_bonus(stops)
+        def north_south_bonus(stops)
           bonus = { revenue: 0 }
 
-          east = stops.find { |stop| stop.groups.include?('E') }
-          west = stops.find { |stop| stop.tile.label&.to_s == 'W' }
+          north = stops.find { |stop| stop.groups.include?('N') }
+          south = stops.find { |stop| stop.groups.include?('S') }
 
-          if east && west
-            bonus[:revenue] += east.tile.icons.sum { |icon| icon.name.to_i }
-            bonus[:revenue] += west.tile.icons.sum { |icon| icon.name.to_i }
-            bonus[:description] = 'E/W'
+          if north && south
+            bonus[:revenue] += north.tile.icons.sum { |icon| icon.name.to_i }
+            bonus[:revenue] += south.tile.icons.sum { |icon| icon.name.to_i }
+            bonus[:description] = 'N/S'
           end
 
           bonus
@@ -319,9 +316,9 @@ module Engine
           end.join('-')
 
           [
-            [boomtown, self.class::BOOMTOWN_REVENUE_DESC],
-            [meat_packing, self.class::MEAT_REVENUE_DESC],
-            [steamboat, 'Port'],
+            [oilgas, self.class::BOOMTOWN_REVENUE_DESC],
+            [grain_mill, self.class::MEAT_REVENUE_DESC],
+            [swsteamboat, 'Port'],
           ].each do |company, desc|
             id = company&.id
             str += " + #{desc}" if id && route.corporation.assigned?(id) && stops.any? { |s| s.hex.assigned?(id) }
@@ -367,6 +364,48 @@ module Engine
             corp = removal[:corporation]
             @log << "-- Event: #{corp}'s #{company_by_id(company).name} bonus removed from #{hex} --"
           end
+        end
+
+
+        def grain_mill
+          @grain_mill ||= company_by_id('GMC')
+        end
+
+        def swsteamboat
+          @swsteamboat ||= company_by_id('SWSC')
+        end
+
+        def oilgas
+          @oilgas ||= company_by_id('OGC')
+        end
+
+        def stock_round
+          Engine::Round::Stock.new(self, [
+            Engine::Step::DiscardTrain,
+            G1846BaronsOfTheBackwaters::Step::SCAssign,
+            G1846BaronsOfTheBackwaters::Step::SWSCAssign,
+            G1846BaronsOfTheBackwaters::Step::BuySellParShares,
+            Engine::Step::HomeToken,
+          ])
+        end
+
+        def operating_round(round_num)
+          @round_num = round_num
+          G1846::Round::Operating.new(self, [
+            G1846::Step::Bankrupt,
+            G1846BaronsOfTheBackwaters::Step::SCAssign,
+            G1846BaronsOfTheBackwaters::Step::SWSCAssign,
+            Engine::Step::SpecialToken,
+            G1846::Step::SpecialTrack,
+            G1846::Step::BuyCompany,
+            G1846::Step::IssueShares,
+            G1846::Step::TrackAndToken,
+            Engine::Step::Route,
+            G1846::Step::Dividend,
+            Engine::Step::DiscardTrain,
+            G1846::Step::BuyTrain,
+            [G1846::Step::BuyCompany, { blocks: true }],
+          ], round_num: round_num)
         end
       end
     end
