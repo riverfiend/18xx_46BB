@@ -1,0 +1,147 @@
+{
+  "id": 100000,
+  "description": "test import",
+  "status": "active",
+  "actions": [
+    {
+      "type": "bid",
+      "entity": 2,
+      "entity_type": "player",
+      "id": 1,
+      "created_at": 1754842474,
+      "company": "TBC",
+      "price": 60
+    },
+    {
+      "type": "bid",
+      "entity": 1,
+      "entity_type": "player",
+      "id": 2,
+      "created_at": 1754842476,
+      "company": "VCC",
+      "price": 60
+    },
+    {
+      "type": "bid",
+      "entity": 0,
+      "entity_type": "player",
+      "id": 3,
+      "created_at": 1754842478,
+      "company": "Pass (1)",
+      "price": 0
+    },
+    {
+      "type": "bid",
+      "entity": 2,
+      "entity_type": "player",
+      "id": 4,
+      "created_at": 1754842480,
+      "company": "Pass (2)",
+      "price": 0
+    },
+    {
+      "type": "bid",
+      "entity": 1,
+      "entity_type": "player",
+      "id": 5,
+      "created_at": 1754842482,
+      "company": "MS",
+      "price": 60
+    },
+    {
+      "type": "bid",
+      "entity": 0,
+      "entity_type": "player",
+      "id": 6,
+      "created_at": 1754842484,
+      "company": "Pass (3)",
+      "price": 0
+    },
+    {
+      "type": "bid",
+      "entity": 2,
+      "entity_type": "player",
+      "id": 7,
+      "created_at": 1754842486,
+      "company": "BT",
+      "price": 40
+    },
+    {
+      "type": "bid",
+      "entity": 1,
+      "entity_type": "player",
+      "id": 8,
+      "created_at": 1754842488,
+      "company": "C&WI",
+      "price": 60
+    },
+    {
+      "type": "pass",
+      "entity": 0,
+      "entity_type": "player",
+      "id": 9,
+      "created_at": 1754842489
+    },
+    {
+      "type": "pass",
+      "entity": 2,
+      "entity_type": "player",
+      "id": 10,
+      "created_at": 1754842491
+    },
+    {
+      "type": "pass",
+      "entity": 1,
+      "entity_type": "player",
+      "id": 11,
+      "created_at": 1754842492
+    },
+    {
+      "type": "bid",
+      "entity": 0,
+      "entity_type": "player",
+      "id": 12,
+      "created_at": 1754842493,
+      "company": "MAIL",
+      "price": 80
+    }
+  ],
+  "id": "hs_stvtopuz_1754842437",
+  "players": [
+    {
+      "name": "Player 1",
+      "id": 0
+    },
+    {
+      "name": "Player 2",
+      "id": 1
+    },
+    {
+      "name": "Player 3",
+      "id": 2
+    }
+  ],
+  "title": "1846 Barons of the Backwaters",
+  "description": "",
+  "min_players": "3",
+  "max_players": "3",
+  "settings": {
+    "optional_rules": [],
+    "seed": ""
+  },
+  "mode": "hotseat",
+  "user": {
+    "id": 0,
+    "name": "You"
+  },
+  "created_at": 21754842490,
+  "loaded": true,
+  "result": {},
+  "manually_ended": null,
+  "turn": 1,
+  "round": "Stock Round",
+  "acting": [
+    0
+  ],
+  "updated_at": 1754842493
+}
