@@ -89,7 +89,7 @@ module Engine
                   'to a different port city and/or train company (including minors). '\
                   'Once purchased by a corporation, it becomes permanently assigned to that corporation. '\
                   'Bonus persists after this company closes in Phase III but is removed in Phase IV.',
-            sym: 'SSB',
+            sym: 'SWSC',
             abilities: [
               {
                 type: 'assign_hexes',
@@ -535,18 +535,10 @@ module Engine
                            'moves two spaces to the right. The L&N receives half the new share price '\
                            '(rounded down), and one treasury share is placed into the market as compensation.'\
                            'This forced sale may exceed the market share limit.',
-              hexes: ['E11'],
-              price: 40,
-              teleport_price: 60,
-            },
-            {
-              type: 'reservation',
-              hex: 'J10',
-              city: 1,
             },
           ],
             coordinates: 'J10',
-            color: :'#FF0000',
+            color: '#8F000F',
             always_market_price: true,
           },
           {
@@ -573,7 +565,7 @@ module Engine
             },
           ],
             coordinates: 'F20',
-            color: :'#FF0000',
+            color: '#ff0000',
             always_market_price: true,
           },
           {
