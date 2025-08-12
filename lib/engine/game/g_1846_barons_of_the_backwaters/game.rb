@@ -98,13 +98,6 @@ module Engine
           'BT' => '/icons/1846/bt_token.svg',
           'OG' => '/icons/1846/og_token.svg',
         }.freeze
-        # def removable_majors_group
-        #  @removable_majors_group ||= self.class::REMOVABLE_MAJORS_GROUP
-        # end
-
-        # def removable_minors_group
-        #  @removable_minors_group ||= self.class::REMOVABLE_MINORS_GROUP
-        # end
 
         def num_excluded_majors(players)
           case players.size
@@ -118,8 +111,8 @@ module Engine
           3 + (players.size < 6 ? 1 : 0)
         end
 
-        def num_random_privates(players, minor_effects = 0)
-          2 + (2 * (players.size > 3 ? 1 : 0)) + (2 * (players.size > 4 ? 1 : 0)) + (players.size > 5 ? 1 : 0) - minor_effects
+        def num_random_privates(players)
+          2 + (players.size > 3 ? 2 : 0) + (players.size > 4 ? 2 : 0) + (players.size > 5 ? 1 : 0)
         end
 
         def num_pass_companies(players)
@@ -138,11 +131,11 @@ module Engine
           end
         end
 
-        def num_removals(group, minor_effects = 0)
+        def num_removals(group)
           case group
           when REMOVABLE_MAJORS_GROUP then num_excluded_majors(players)
           when REMOVABLE_MINORS_GROUP, MINOR_PRIVATES_GROUP then num_excluded_minors(players)
-          when REMOVABLE_PRIVATES_GROUP then group.size - num_random_privates(players, minor_effects)
+          when REMOVABLE_PRIVATES_GROUP then group.size - num_random_privates(players) - @force_exclude_companies.size - @ccc_extra
           else
             puts 'buggy removal'
             raise GameError, 'Something has Gone Wrong -- Buggy removal'
@@ -182,7 +175,8 @@ module Engine
 
         def setup
           @turn = setup_turn
-
+          @ccc_extra = 0
+          @force_exclude_companies = []
           # When creating a game the game will not have enough to start
           unless (player_count = @players.size).between?(*self.class::PLAYER_RANGE)
             raise GameError, "#{self.class::GAME_TITLE} does not support #{player_count} players"
@@ -201,39 +195,37 @@ module Engine
           @removed_minors = []
           remove_from_group!(MINOR_PRIVATES_GROUP, @companies) do |minor|
             @removed_minors.push(minor.id)
-            ability_with_icons = minor.abilities.find { |ability| ability.type == 'tile_lay' }
-            remove_icons(ability_with_icons.hexes, self.class::ABILITY_ICONS[minor.id]) if ability_with_icons
             ability_with_icons = minor.abilities.find { |ability| ability.type == 'assign_hexes' }
-            remove_icons(ability_with_icons.hexes, self.class::ABILITY_ICONS[minor.id]) if ability_with_icons
+            remove_icons(ability_with_icons.hexes, self.class::ABILITY_ICONS[minor.id]) if ability_with_icons #only the CC&C has an icon
             minor.close!
             @round.active_step.companies.delete(minor)
           end
-          @minor_effects = 0
-          @force_exclude_companies = []
+
+
           @companies.each do |company|
             next unless company.name.include? 'Minor'
 
             @force_exclude_companies.push(private_excluded(company.id))
             if company.id == 'CC&C'
-              puts 'un-removing a private...'
-              @minor_effects -= 1
+              @log << "The CC&C is included, adding an extra private."
+              @ccc_extra = 1
             end
           end
+          @force_exclude_companies.delete('NOT_A_PRIVATE')
           @force_exclude_companies.each do |excluded_private|
             @companies.each do |company|
               next unless company.name.include? excluded_private
-
-              @minor_effects += 1
-              @log << "Removing #{company.name}"
+              @log << "Removing #{company.name}, and drawing a replacement."
               ability_with_icons = company.abilities.find { |ability| ability.type == 'tile_lay' }
               remove_icons(ability_with_icons.hexes, self.class::ABILITY_ICONS[company.id]) if ability_with_icons
               ability_with_icons = company.abilities.find { |ability| ability.type == 'assign_hexes' }
               remove_icons(ability_with_icons.hexes, self.class::ABILITY_ICONS[company.id]) if ability_with_icons
               company.close!
+              @round.active_step.companies.delete(company)
+              @companies.delete(company)
             end
           end
           # Finally, select the privates
-          puts 'removing privates...'
           remove_from_group!(REMOVABLE_PRIVATES_GROUP, @companies) do |company|
             ability_with_icons = company.abilities.find { |ability| ability.type == 'tile_lay' }
             remove_icons(ability_with_icons.hexes, self.class::ABILITY_ICONS[company.id]) if ability_with_icons
@@ -243,8 +235,11 @@ module Engine
             @round.active_step.companies.delete(company)
           end
 
-          @log << "Privates in the game: #{@companies.reject { |c| c.name.include?('Pass') }.map(&:name).sort.join(', ')}"
-          @log << "Corporations in the game: #{@corporations.map(&:name).sort.join(', ')}"
+          @log << "#{@corporations.size} corporations in the game: #{@corporations.map(&:name).sort.join(', ')}"
+          minors_in_game = @companies.reject { |c| !c.name.include?('Minor') }
+          @log << "#{minors_in_game.size} Minors in the game: #{minors_in_game.map(&:name).sort.join(', ')}"
+          privates_in_game = @companies.reject { |c| c.name.include?('Pass') || c.name.include?('Minor') }
+          @log << "#{privates_in_game.size} privates in the game: #{privates_in_game.map(&:name).sort.join(', ')}"
 
           @cert_limit = init_cert_limit
 
