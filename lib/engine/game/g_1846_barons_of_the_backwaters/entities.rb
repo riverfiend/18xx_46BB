@@ -250,7 +250,7 @@ module Engine
                   'Splits dividends equally with owner. Purchasing company receives its cash, train and token '\
                   'but cannot run this 2 train in the same OR in which the BIG4 operated. '\
                   'If this company is in the game, the game begins with an extra tile in Indianapolis (G9), '\
-                  'connecting to F10 and G7',
+                  'connecting to F10 and G7 (TODO)',
             sym: 'BIG4',
             color: nil,
           },
