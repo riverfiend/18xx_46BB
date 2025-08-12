@@ -82,11 +82,7 @@ module Engine
           IC: 'ic',
         }.freeze
 
-        MEAT_HEXES = %w[D6 I1].freeze
-
         GRAIN_HEXES = %w[G3 C9 J12].freeze
-
-        STEAMBOAT_HEXES = %w[B8 C5 D14 I1 G19].freeze
 
         SOUTHWEST_STEAMBOAT_HEXES = %w[B8 C5 D14 I1 G19].freeze
 
@@ -399,7 +395,7 @@ module Engine
             G1846::Step::SpecialTrack,
             G1846::Step::BuyCompany,
             G1846::Step::IssueShares,
-            G1846::Step::TrackAndToken,
+            G1846BaronsOfTheBackwaters::Step::TrackAndToken,
             Engine::Step::Route,
             G1846::Step::Dividend,
             Engine::Step::DiscardTrain,
