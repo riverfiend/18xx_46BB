@@ -91,6 +91,8 @@ module Engine
         OILGAS_HEXES = %w[G19 G15 E21].freeze
 
         CCCI_HEXES = %w[G15 F16].freeze
+        BRP_SALAMANCA_HEX = %w[E21].freeze
+        VCC_COAL_HEX = %w[H18].freeze
 
         OILGAS_REVENUE_DESC = "Oil/Gas"
 
@@ -278,7 +280,7 @@ module Engine
               minor.close!
               next
             end
-
+            maybe_lay_minor_tile(minor)              
             train = @depot.upcoming[0]
             train.buyable = false
             buy_train(minor, train, :free)
@@ -289,6 +291,17 @@ module Engine
           @last_action = nil
         end
 
+        def maybe_lay_minor_tile(minor)
+          case minor.id
+          when 'VCC'
+            @log << "VCC floating -- laying special Coal Mine tile"
+          when 'BRP'
+            @log << "BRP floating -- laying special Salamanca tile"
+          else
+            return
+          end
+        end
+        
         def preprocess_action(action)
           preprocess_upgrade_to_connect(action)
           check_special_tile_lay(action) unless psuedo_special_tile_lay?(action)
