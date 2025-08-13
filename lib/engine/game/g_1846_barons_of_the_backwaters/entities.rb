@@ -757,7 +757,7 @@ module Engine
             logo: '1846/VCC',
             simple_logo: '1846/VCC.alt',
             tokens: [0],
-            coordinates: 'G3',
+            coordinates: 'H18',
             color: :pink,
             text_color: 'black',
             abilities: [

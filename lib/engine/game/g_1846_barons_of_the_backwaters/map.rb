@@ -110,6 +110,36 @@ module Engine
           },
           '611' => 4,
           '619' => 3,
+          '46BB1' => {
+            'count' => 1,
+            'color' => 'gray',
+            'code' => 'city=revenue:20,slots:2;path=a:1,b:_0;path=a:2,b:_0;'\
+                      'path=a:3,b:_0;path=a:4,b:_0;label=Sal',
+          },
+          '46BB2' => {
+            'count' => 1,
+            'color' => 'green',
+            'code' => 'city=revenue:20,slots:1;path=a:1,b:_0;path=a:2,b:_0;'\
+                      'path=a:3,b:_0;path=a:4,b:_0;label=GM',
+          },
+          '46BB3' => {
+            'count' => 1,
+            'color' => 'brown',
+            'code' => 'city=revenue:20,slots:2;path=a:1,b:_0;path=a:2,b:_0;'\
+                      'path=a:3,b:_0;path=a:4,b:_0;label=GM',
+          },
+          '46BB4' => {
+            'count' => 1,
+            'color' => 'brown',
+            'code' => 'city=revenue:20,slots:1;path=a:1,b:_0;path=a:2,b:_0;'\
+                      'path=a:3,b:_0;path=a:4,b:_0;label=Coal',
+          },
+          '46BB5' => {
+            'count' => 1,
+            'color' => 'gray',
+            'code' => 'city=revenue:20,slots:2;path=a:1,b:_0;path=a:2,b:_0;'\
+                      'path=a:3,b:_0;path=a:4,b:_0;label=Coal',
+          },
         }.freeze
 
         LOCATION_NAMES = {
@@ -186,6 +216,7 @@ module Engine
             ['I15'] => 'city=revenue:20;path=a:2,b:_0;path=a:3,b:_0;path=a:4,b:_0',
             ['E21'] => 'city=revenue:yellow_10|green_20;path=a:1,b:_0;path=a:2,b:_0;path=a:4,b:_0;icon=image:1846/oil,sticky:1',
             ['K3'] => 'city=revenue:20,slots:2;path=a:3,b:_0;path=a:4,b:_0;path=a:2,b:_0;icon=image:swport',
+            ['H18'] => 'city=revenue:0;label=Coal'
           },
           red: {
             ['B8'] => 'offboard=revenue:yellow_40|brown_10;path=a:4,b:_0;icon=image:port;icon=image:port',
