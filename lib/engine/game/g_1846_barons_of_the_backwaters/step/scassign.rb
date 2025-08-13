@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-require_relative '../../../step/assign'
+require_relative '../../g_1846/step/assign'
 
 module Engine
   module Game
