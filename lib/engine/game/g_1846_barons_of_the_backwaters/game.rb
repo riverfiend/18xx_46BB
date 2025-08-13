@@ -90,6 +90,14 @@ module Engine
 
         OILGAS_HEXES = %w[G19 G15 E21].freeze
 
+        OILGAS_REVENUE_DESC = "Oil/Gas"
+
+        GRAIN_REVENUE_DESC = "Grain Mill"
+
+        SWSTEAMBOAT_REVENUE_DESC = "SWSC Port"
+
+        STEAMBOAT_REVENUE_DESC = "SC Port"
+
         ASSIGNMENT_TOKENS = {
           'MPC' => '/icons/1846/mpc_token.svg',
           'GMC' => '/icons/1846/gmc_token.svg',
@@ -287,13 +295,28 @@ module Engine
         def north_south_bonus(stops)
           bonus = { revenue: 0 }
 
-          north = stops.find { |stop| stop.groups.include?('N') }
-          south = stops.find { |stop| stop.groups.include?('S') }
+          north = stops.find { |stop| stop.tile.label&.to_s() == 'N/W' } # there's only one N on the map, it's Chicago -- TODO: Make sure that's final
+          south = stops.find { |stop| stop.tile.label&.to_s() == 'S/W' } # there's only one S on the map, it's Nashville -- TODO: Make sure that's final
 
           if north && south
             bonus[:revenue] += north.tile.icons.sum { |icon| icon.name.to_i }
             bonus[:revenue] += south.tile.icons.sum { |icon| icon.name.to_i }
             bonus[:description] = 'N/S'
+          end
+
+          bonus
+        end
+
+        def east_west_bonus(stops)
+          bonus = { revenue: 0 }
+
+          east = stops.find { |stop| stop.groups.include?('E') }
+          west = stops.find { |stop| ((stop.tile.label&.to_s() == 'W') || (stop.tile.label&.to_s() == 'S/W') || (stop.tile.label&.to_s() == 'N/W')) }
+
+          if east && west
+            bonus[:revenue] += east.tile.icons.sum { |icon| icon.name.to_i }
+            bonus[:revenue] += west.tile.icons.sum { |icon| icon.name.to_i }
+            bonus[:description] = 'E/W'
           end
 
           bonus
@@ -307,16 +330,21 @@ module Engine
           end.join('-')
 
           [
-            [oilgas, self.class::BOOMTOWN_REVENUE_DESC],
-            [grain_mill, self.class::MEAT_REVENUE_DESC],
-            [swsteamboat, 'Port'],
+            [oilgas, self.class::OILGAS_REVENUE_DESC],
+            [grain_mill, self.class::GRAIN_REVENUE_DESC],
+            [swsteamboat, self.class::SWSTEAMBOAT_REVENUE_DESC],
+            [boomtown, self.class::BOOMTOWN_REVENUE_DESC],
+            [meat_packing, self.class::MEAT_REVENUE_DESC],
+            [steamboat, self.class::STEAMBOAT_REVENUE_DESC],
           ].each do |company, desc|
             id = company&.id
             str += " + #{desc}" if id && route.corporation.assigned?(id) && stops.any? { |s| s.hex.assigned?(id) }
           end
 
-          bonus = east_west_bonus(stops)[:description]
-          str += " + #{bonus}" if bonus
+          nsbonus = north_south_bonus(stops)[:description]
+          ewbonus = east_west_bonus(stops)[:description]
+          str += " + #{nsbonus}" if nsbonus
+          str += " + #{ewbonus}" if ewbonus
 
           if route.train.owner.companies.include?(mail_contract)
             longest = route.routes.max_by { |r| [r.visited_stops.size, r.train.id] }
@@ -324,6 +352,10 @@ module Engine
           end
 
           str
+        end
+
+        def east_west_desc
+          'cross-map'
         end
 
         def event_remove_bonuses!
