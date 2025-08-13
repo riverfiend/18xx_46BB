@@ -90,6 +90,8 @@ module Engine
 
         OILGAS_HEXES = %w[G19 G15 E21].freeze
 
+        CCCI_HEXES = %w[G15 F16].freeze
+
         OILGAS_REVENUE_DESC = "Oil/Gas"
 
         GRAIN_REVENUE_DESC = "Grain Mill"
@@ -106,6 +108,22 @@ module Engine
           'BT' => '/icons/1846/bt_token.svg',
           'OG' => '/icons/1846/og_token.svg',
         }.freeze
+
+        def grain_mill
+          @grain_mill ||= company_by_id('GMC')
+        end
+
+        def swsteamboat
+          @swsteamboat ||= company_by_id('SWSC')
+        end
+
+        def oilgas
+          @oilgas ||= company_by_id('OGC')
+        end
+
+        def ccci
+          @ccci ||= company_by_id('CC&C')
+        end
 
         def num_excluded_majors(players)
           case players.size
@@ -271,6 +289,137 @@ module Engine
           @last_action = nil
         end
 
+        def preprocess_action(action)
+          preprocess_upgrade_to_connect(action)
+          check_special_tile_lay(action) unless psuedo_special_tile_lay?(action)
+        end
+
+        def ccci_router
+          @ccci_router ||=
+            Engine::Corporation.new(name: 'CC&C Corp', sym: 'CC&C Corp', tokens: [], coordinates: CCCI_HEXES.first)
+        end
+
+        def compute_ccci_graph
+          graph = Graph.new(self, no_blocking: true, home_as_token: true)
+          graph.compute(ccci_router)
+          graph
+        end
+
+        def upgrade_to_connect_action?(action)
+          (action.entity == little_miami || action.entity == ccci) &&
+            (action.is_a?(Action::LayTile) || action.is_a?(Action::Pass))
+        end
+
+        def preprocess_upgrade_to_connect(action)
+          return unless upgrade_to_connect_action?(action)
+          case action.entity
+          when little_miami
+            @little_miami_hexes_laid ||= []
+            check_little_miami_graph_before! if @little_miami_hexes_laid.empty?
+          when ccci
+            @ccci_hexes_laid ||= []
+            check_ccci_graph_before! if @ccci_hexes_laid.empty?
+          end
+
+          return unless action.is_a?(Action::LayTile)
+
+          hex = action.hex
+          case action.entity
+          when little_miami
+            @little_miami_before_exits ||= {}
+            @little_miami_before_exits[hex.id] = hex.tile.exits.dup
+          when ccci
+            @ccci_before_exits ||= {}
+            @ccci_before_exits[hex.id] = hex.tile.exits.dup
+          end
+        end
+
+        def postprocess_upgrade_to_connect(action)
+          return unless upgrade_to_connect_action?(action)
+
+          if action.is_a?(Action::LayTile)
+            hex = action.hex
+            case action.entity
+            when little_miami
+              @little_miami_new_exits ||= {}
+              @little_miami_new_exits[hex.id] = hex.tile.exits.dup - @little_miami_before_exits[hex.id]
+              if @little_miami_hexes_laid == [hex]
+                raise GameError, 'Cannot lay and upgrade a tile in the same hex with Little Miami'
+              end
+              @little_miami_hexes_laid << hex
+            when ccci
+              @ccci_new_exits ||= {}
+              @ccci_new_exits[hex.id] = hex.tile.exits.dup - @ccci_before_exits[hex.id]
+              if @ccci_hexes_laid == [hex]
+                raise GameError, 'Cannot lay and upgrade a tile in the same hex with CC&C'
+              end
+              @ccci_hexes_laid << hex
+            end 
+          end
+
+          return if abilities(action.entity, :tile_lay)
+          case action.entity
+          when little_miami
+            check_little_miami_graph_after!
+            remove_icons(self.class::LITTLE_MIAMI_HEXES, self.class::ABILITY_ICONS[little_miami.id])
+          when ccci
+            check_ccci_graph_after!
+            remove_icons(self.class::CCCI_HEXES, self.class::ABILITY_ICONS[ccci.id])
+          end
+        end
+
+        def check_ccci_graph_before!
+          return if loading
+
+          graph = compute_ccci_graph
+          reached_hexes = graph.connected_nodes(ccci_router).select { |_k, v| v }.keys.map { |n| n.hex.id }
+
+          return unless (CCCI_HEXES & reached_hexes) == CCCI_HEXES
+
+          raise GameError, "#{CCCI_HEXES.join(' and ')} are already connected, cannot use CC&C"
+        end
+
+        def check_ccci_graph_after!
+          return if loading
+
+          graph = compute_ccci_graph
+          reached_hexes = graph.connected_nodes(ccci_router).select { |_k, v| v }.keys.map { |n| n.hex.id }
+          if (CCCI_HEXES & reached_hexes) != CCCI_HEXES
+            raise GameError, "#{CCCI_HEXES.join(' and ')} must be connected after using CC&C"
+          end
+
+          new_paths_by_hex = @ccci_new_exits.map do |hex_id, exits|
+            paths = exits.flat_map do |exit|
+              graph.connected_paths(ccci_router).keys.select do |path|
+                path.hex.id == hex_id && path.exits.include?(exit)
+              end
+            end
+            [hex_id, paths]
+          end
+
+          return if new_paths_by_hex.all? do |hex_id, new_paths_on_hex|
+            ccci_a_new_path_used_for_connection?(hex_id, new_paths_on_hex)
+          end
+
+          raise GameError, 'Some new track on each tile laid by CC&C must '\
+                           "be used to connect #{CCCI_HEXES.join(' and ')}"
+        end
+
+        def ccci_a_new_path_used_for_connection?(hex_id, new_paths)
+          node = hex_by_id(hex_id).tile.cities.first
+
+          other_hex_id = CCCI_HEXES.find { |h| h != hex_id }
+          other_node = hex_by_id(other_hex_id).tile.cities.first
+
+          node.walk do |_path, visited_paths, visited_nodes|
+            return true if visited_nodes[other_node] && new_paths.any? { |p| visited_paths[p] }
+          end
+
+          false
+        end
+
+
+
         def revenue_for(route, stops)
           revenue = super
           # This should properly process the base-game privates
@@ -390,17 +539,6 @@ module Engine
         end
 
 
-        def grain_mill
-          @grain_mill ||= company_by_id('GMC')
-        end
-
-        def swsteamboat
-          @swsteamboat ||= company_by_id('SWSC')
-        end
-
-        def oilgas
-          @oilgas ||= company_by_id('OGC')
-        end
 
         def stock_round
           Engine::Round::Stock.new(self, [
@@ -419,7 +557,7 @@ module Engine
             G1846BaronsOfTheBackwaters::Step::SCAssign,
             G1846BaronsOfTheBackwaters::Step::SWSCAssign,
             Engine::Step::SpecialToken,
-            G1846::Step::SpecialTrack,
+            G1846BaronsOfTheBackwaters::Step::SpecialTrack,
             G1846::Step::BuyCompany,
             G1846::Step::IssueShares,
             G1846BaronsOfTheBackwaters::Step::TrackAndToken,
