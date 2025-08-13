@@ -22,7 +22,8 @@ module Engine
                           owner_type: 'corporation',
                           free: false,
                           discount: 20,
-                          must_lay_together: false,
+                          must_lay_together: true,
+                          connect: false,
                           hexes: %w[I13 J14 K13],
                           tiles: %w[7 8 9],
                           count: 2,
@@ -42,6 +43,7 @@ module Engine
                 discount: 20,
                 terrain: 'water',
                 owner_type: 'corporation',
+                exact_match: false,
               },
             ],
             color: nil,
@@ -82,8 +84,7 @@ module Engine
             name: 'Southwestern Steamboat Company',
             value: 40,
             revenue: 10,
-            desc: 'TESTING a new private '\
-                  'Add a bonus to the value of one port city, either a $40 bonus to Evansville (J6) '\
+            desc: 'Add a bonus to the value of one port city, either a $40 bonus to Evansville (J6) '\
                   'or a $20 bonus to (I17) / (K3) / (L8) / St. Louis (I1). '\
                   'At the beginning of each OR, this company\'s owner may reassign this bonus '\
                   'to a different port city and/or train company (including minors). '\
@@ -124,8 +125,7 @@ module Engine
             name: 'Oil and Gas Company',
             value: 40,
             revenue: 10,
-            desc: 'TESTING a new private '\
-                  'Add a $20 bonus to one of the oil/gas locations (G19, G15, E21) for the assigned company.'\
+            desc: 'Add a $20 bonus to one of the oil/gas locations (G19, G15, E21) for the assigned company.'\
                   'At the beginning of each OR, this company\'s owner may reassign this bonus '\
                   'to a different port city and/or train company (including minors). '\
                   'Once purchased by a corporation, it becomes permanently assigned to that corporation. '\
@@ -207,8 +207,7 @@ module Engine
             sym: 'BT',
             value: 40,
             revenue: 10,
-            desc: 'TEST modifying an existing private'\
-                  'Adds a $20 bonus to Cincinnati (H12) or Louisville (J10) for the owning corporation. '\
+            desc: 'Adds a $20 bonus to Cincinnati (H12) or Louisville (J10) for the owning corporation. '\
                   'Bonus must be assigned after being purchased by a corporation. '\
                   'Bonus persists after this company closes in Phase III but is removed in Phase IV.',
             abilities: [
@@ -273,6 +272,7 @@ module Engine
                 discount: 20,
                 terrain: 'water',
                 owner_type: 'corporation',
+                exact_match: false,
               },
             ],
             color: nil,
@@ -301,6 +301,7 @@ module Engine
                 discount: 20,
                 terrain: 'mountain',
                 owner_type: 'corporation',
+                exact_match: false,
               },
             ],
             color: nil,
@@ -397,6 +398,7 @@ module Engine
                 discount: 20,
                 terrain: 'mountain',
                 owner_type: 'corporation',
+                exact_match: false,
               },
             ],
             color: nil,
@@ -738,10 +740,14 @@ module Engine
             text_color: 'black',
             abilities: [
               {
+                description: 'Terrain discount: Water',
+                desc_detail: 'Reduces the cost of laying tiles on water hexes or connecting hexes with bridges '\
+                             '(blue hex edges) by $20 for the owning corporation.',
                 type: 'tile_discount',
                 discount: 20,
                 terrain: 'water',
                 owner_type: 'corporation',
+                exact_match: false,
               },
             ],
           },
@@ -756,10 +762,13 @@ module Engine
             text_color: 'black',
             abilities: [
               {
+                description: 'Mountain discount',
+                desc_detail: 'Minor (or owning company) recieves a $20 discount on laying mountain tiles.',
                 type: 'tile_discount',
                 discount: 20,
                 terrain: 'mountain',
                 owner_type: 'corporation',
+                exact_match: false,
               },
             ],
           },
